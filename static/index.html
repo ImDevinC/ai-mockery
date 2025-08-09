@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockery Landing Page</title>
+    <script src="https://unpkg.com/htmx.org"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mockery</h1>
+        <form id="mockery-form">
+            <input type="text" name="class" placeholder="Enter class">
+            <input type="text" name="species" placeholder="Enter species">
+            <button type="button" onclick="handleSubmit(event)">Submit</button>
+        </form>
+        <script>
+          window.handleSubmit = async function(event) {
+            event.preventDefault(); // Prevent the default form submission
+          
+            document.getElementById('result').innerHTML = '<p>Loading...</p>'; // Show loading message
+          
+            const form = document.getElementById('mockery-form');
+            const formData = new FormData(form);
+            const jsonData = {};
+            formData.forEach((value, key) => {
+              jsonData[key] = value;
+            });
+          
+            try {
+              const response = await fetch('/mockery', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(jsonData),
+              });
+          
+              const result = await response.json();
+              document.getElementById('result').innerHTML = `${JSON.stringify(result.insult, null, 2)}`;
+            } catch (error) {
+              document.getElementById('result').innerHTML = 'Error occurred while fetching data.';
+            }
+          }
+        </script>
+        <div>
+          <p id="result" class="result"></p>
+        </div>
+    </div>
+</body>
+</html>
