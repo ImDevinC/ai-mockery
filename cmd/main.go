@@ -33,13 +33,19 @@ func main() {
 		slog.Error("OPENAI_MODEL environment variable is not set")
 		os.Exit(1)
 	}
+	rawTemp := os.Getenv("LLM_TEMPERATURE")
+	temp, err := strconv.ParseFloat(rawTemp, 64)
+	if err != nil {
+		slog.Error("failed to parse LLM_TEMPERATURE environment variable. Using default of 0.7", "error", err)
+		temp = 0.7 // Default temperature if not set or invalid
+	}
 	llm, err := openai.New(openai.WithModel(model), openai.WithToken(openaiKey))
 	if err != nil {
 		slog.Error("failed to create OpenAI LLM", "error", err)
 		os.Exit(1)
 	}
 
-	mockeryService := services.NewMockeryService(llm, string(userPrompt))
+	mockeryService := services.NewMockeryService(llm, string(userPrompt), temp)
 	mockeryHandler := handlers.NewMockeryHandler(mockeryService)
 
 	mux := http.NewServeMux()

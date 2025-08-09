@@ -11,12 +11,14 @@ type MockeryService struct {
 	llm              llms.Model
 	userPrompt       string
 	previousMessages []string
+	temp             float64
 }
 
-func NewMockeryService(llm llms.Model, userPrompt string) *MockeryService {
+func NewMockeryService(llm llms.Model, userPrompt string, temp float64) *MockeryService {
 	return &MockeryService{
 		llm:        llm,
 		userPrompt: userPrompt,
+		temp:       temp,
 	}
 }
 
@@ -38,7 +40,7 @@ func (m *MockeryService) GenerateInsult(ctx context.Context, input string) (stri
 			Parts: []llms.ContentPart{llms.TextPart(previous)},
 		})
 	}
-	response, err := m.llm.GenerateContent(ctx, messages, llms.WithTemperature(1))
+	response, err := m.llm.GenerateContent(ctx, messages, llms.WithTemperature(m.temp))
 	if err != nil {
 		return "", fmt.Errorf("failed to generate insult: %w", err)
 	}
