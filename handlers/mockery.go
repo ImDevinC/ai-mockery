@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -9,8 +10,9 @@ import (
 )
 
 type MockeryRequest struct {
-	Class   string `json:"class"`
-	Species string `json:"species"`
+	Class             string `json:"class"`
+	Species           string `json:"species"`
+	PreviousResponses string `json:"previousResponses,omitempty"`
 }
 
 type MockeryResponse struct {
@@ -51,8 +53,20 @@ func (h *MockeryHandler) handleMockery(w http.ResponseWriter, r *http.Request) {
 		h.writeErrorResponse(w, http.StatusBadRequest, "Class or Species must be provided")
 		return
 	}
+	previous, err := base64.StdEncoding.DecodeString(request.PreviousResponses)
+	if err != nil {
+		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid previous responses format")
+		return
+	}
+	var previousResponses []string
+	err = json.Unmarshal(previous, &previousResponses)
+	if err != nil {
+		slog.Error("failed to decode previous responses", "error", err)
+		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid previous responses format")
+		return
+	}
 
-	response, err := h.mockeryService.GenerateInsult(r.Context(), prompt)
+	response, err := h.mockeryService.GenerateInsult(r.Context(), prompt, previousResponses)
 	if err != nil {
 		slog.Error("failed to generate insult", "error", err)
 		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to generate insult")
