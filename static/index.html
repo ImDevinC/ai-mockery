@@ -64,19 +64,29 @@
             <input type="text" name="species" placeholder="Enter species">
             <button type="button" onclick="handleSubmit(event)">Submit</button>
         </form>
+        <div>
+          <p id="result" class="result"></p>
+        </div>
         <script>
+          // Load stored responses from localStorage on page load
+          const storedResponses = JSON.parse(localStorage.getItem('responses')) || [];
+          const firstSend = true;
+
           window.handleSubmit = async function(event) {
             event.preventDefault(); // Prevent the default form submission
-          
+
             document.getElementById('result').innerHTML = '<p>Loading...</p>'; // Show loading message
-          
+
             const form = document.getElementById('mockery-form');
             const formData = new FormData(form);
             const jsonData = {};
             formData.forEach((value, key) => {
               jsonData[key] = value;
             });
-          
+
+           // Include stored responses in the first message to the backend
+           jsonData.previousResponses = btoa(unescape(encodeURIComponent(JSON.stringify(storedResponses))));
+
             try {
               const response = await fetch('/mockery', {
                 method: 'POST',
@@ -85,17 +95,20 @@
                 },
                 body: JSON.stringify(jsonData),
               });
-          
+
               const result = await response.json();
+
+              // Store the new response in localStorage
+              storedResponses.push(result.insult);
+              localStorage.setItem('responses', JSON.stringify(storedResponses));
+
               document.getElementById('result').innerHTML = `${JSON.stringify(result.insult, null, 2)}`;
             } catch (error) {
               document.getElementById('result').innerHTML = 'Error occurred while fetching data.';
             }
+            firstSend = false;
           }
         </script>
-        <div>
-          <p id="result" class="result"></p>
-        </div>
     </div>
 </body>
 </html>

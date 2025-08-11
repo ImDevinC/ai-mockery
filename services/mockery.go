@@ -8,10 +8,9 @@ import (
 )
 
 type MockeryService struct {
-	llm              llms.Model
-	userPrompt       string
-	previousMessages []string
-	temp             float64
+	llm        llms.Model
+	userPrompt string
+	temp       float64
 }
 
 func NewMockeryService(llm llms.Model, userPrompt string, temp float64) *MockeryService {
@@ -22,7 +21,7 @@ func NewMockeryService(llm llms.Model, userPrompt string, temp float64) *Mockery
 	}
 }
 
-func (m *MockeryService) GenerateInsult(ctx context.Context, input string) (string, error) {
+func (m *MockeryService) GenerateInsult(ctx context.Context, input string, previousResponses []string) (string, error) {
 	var messages []llms.MessageContent
 	prompt := m.userPrompt + "\nThe character details are as follows: \n" + input
 	newMessage := llms.MessageContent{
@@ -30,9 +29,9 @@ func (m *MockeryService) GenerateInsult(ctx context.Context, input string) (stri
 		Parts: []llms.ContentPart{llms.TextPart(prompt)},
 	}
 	messages = append(messages, newMessage)
-	if len(m.previousMessages) > 0 {
+	if len(previousResponses) > 0 {
 		previous := "You have already mocked this character with the following insults, so create a new one\n"
-		for _, msg := range m.previousMessages {
+		for _, msg := range previousResponses {
 			previous += msg + "\n"
 		}
 		messages = append(messages, llms.MessageContent{
@@ -52,6 +51,5 @@ func (m *MockeryService) GenerateInsult(ctx context.Context, input string) (stri
 		Role:  llms.ChatMessageTypeAI,
 		Parts: []llms.ContentPart{llms.TextPart(content)},
 	})
-	m.previousMessages = append(m.previousMessages, content)
 	return content, nil
 }
