@@ -68,12 +68,11 @@
           <p id="result" class="result"></p>
         </div>
         <script>
-          // Load stored responses from localStorage on page load
           const storedResponses = JSON.parse(localStorage.getItem('responses')) || [];
           const firstSend = true;
 
           window.handleSubmit = async function(event) {
-            event.preventDefault(); // Prevent the default form submission
+            event.preventDefault();
 
             document.getElementById('result').innerHTML = '<p>Loading...</p>'; // Show loading message
 
@@ -84,7 +83,6 @@
               jsonData[key] = value;
             });
 
-           // Include stored responses in the first message to the backend
            jsonData.previousResponses = btoa(unescape(encodeURIComponent(JSON.stringify(storedResponses))));
 
             try {
@@ -98,8 +96,10 @@
 
               const result = await response.json();
 
-              // Store the new response in localStorage
               storedResponses.push(result.insult);
+              if (storedResponses.length > 50) {
+                storedResponses.splice(0, storedResponses.length - 50);
+              }
               localStorage.setItem('responses', JSON.stringify(storedResponses));
 
               document.getElementById('result').innerHTML = `${JSON.stringify(result.insult, null, 2)}`;
