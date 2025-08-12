@@ -6,6 +6,24 @@
     <title>Mockery Landing Page</title>
     <script src="https://unpkg.com/htmx.org"></script>
     <style>
+        :root {
+            --background-color: #f4f4f9;
+            --text-color: #000;
+            --container-background: #fff;
+            --button-background: #007BFF;
+            --button-hover-background: #0056b3;
+            --result-background: #e9ecef;
+        }
+
+        [data-theme="dark"] {
+            --background-color: #121212;
+            --text-color: #fff;
+            --container-background: #1e1e1e;
+            --button-background: #1a73e8;
+            --button-hover-background: #1358a5;
+            --result-background: #2c2c2c;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -14,11 +32,12 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f4f4f9;
+            background-color: var(--background-color);
+            color: var(--text-color);
         }
 
         .container {
-            background: #fff;
+            background: var(--container-background);
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -37,7 +56,7 @@
         }
 
         button {
-            background-color: #007BFF;
+            background-color: var(--button-background);
             color: white;
             border: none;
             padding: 10px 15px;
@@ -46,19 +65,23 @@
         }
 
         button:hover {
-            background-color: #0056b3;
+            background-color: var(--button-hover-background);
         }
 
         .result {
             margin-top: 20px;
             padding: 20px;
             font-style: italic;
+            background: var(--result-background);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Mockery</h1>
+        <h1>Vicious Mockery Generator</h1>
+        <div id="theme-toggle" style="position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 1.5rem;">
+            <span id="theme-icon">🌜</span>
+        </div>
         <form id="mockery-form">
             <input type="text" name="class" placeholder="Enter class">
             <input type="text" name="species" placeholder="Enter species">
@@ -69,6 +92,22 @@
         </div>
         <script>
           const storedResponses = JSON.parse(localStorage.getItem('responses')) || [];
+
+          // Theme toggle logic
+          const themeToggle = document.getElementById('theme-toggle');
+          const themeIcon = document.getElementById('theme-icon');
+          const currentTheme = localStorage.getItem('theme') || 'light';
+          document.documentElement.setAttribute('data-theme', currentTheme);
+
+          themeToggle.addEventListener('click', () => {
+            const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            themeIcon.textContent = newTheme === 'light' ? '🌜' : '🌞';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+          });
+
+          // Set the initial icon based on the current theme
+          themeIcon.textContent = currentTheme === 'light' ? '🌜' : '🌞';
           const firstSend = true;
 
           window.handleSubmit = async function(event) {
