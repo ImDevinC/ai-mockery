@@ -18,9 +18,14 @@ func main() {
 		slog.Debug("failed to parse PORT environment variable. Using default of 8080", "error", err)
 		port = 8080
 	}
-	userPrompt, err := os.ReadFile("prompts/user.txt")
+	mockeryPrompt, err := os.ReadFile("prompts/mockery.txt")
 	if err != nil {
-		slog.Error("failed to read user prompt", "error", err)
+		slog.Error("failed to read mockery prompt", "error", err)
+		os.Exit(1)
+	}
+	flarePrompt, err := os.ReadFile("prompts/flare.txt")
+	if err != nil {
+		slog.Error("failed to read flare prompt", "error", err)
 		os.Exit(1)
 	}
 	openaiKey := os.Getenv("OPENAI_API_KEY")
@@ -49,11 +54,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	mockeryService := services.NewMockeryService(llm, string(userPrompt), temp)
+	mockeryService := services.NewMockeryService(llm, string(mockeryPrompt), temp)
 	mockeryHandler := handlers.NewMockeryHandler(mockeryService)
+	flareService := services.NewFlareService(llm, string(flarePrompt), temp)
+	flareHandler := handlers.NewFlareHandler(flareService)
 
 	mux := http.NewServeMux()
 	mockeryHandler.RegisterRoutes(mux)
+	flareHandler.RegisterRoutes(mux)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "static/index.html")

@@ -31,9 +31,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             background-color: var(--background-color);
             color: var(--text-color);
+            flex-direction: column;
         }
 
         .container {
@@ -44,6 +45,27 @@
             width: 90%;
             max-width: 500px;
             text-align: center;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                width: 100%;
+                padding: 15px;
+            }
+
+            button {
+                width: 100%;
+                padding: 12px;
+            }
+
+            input[type="text"] {
+                width: 100%;
+            }
         }
 
         input[type="text"] {
@@ -90,6 +112,17 @@
         <div>
           <p id="result" class="result"></p>
         </div>
+
+    </div>
+
+    <div class="container" style="margin-top: 20px;">
+      <h2>Flare Generator</h2>
+      <div id="flare-section">
+        <input type="text" id="flare-input" placeholder="Enter character details" style="width: calc(100% - 20px); padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+        <button type="button" onclick="fetchFlare()">Get Flare</button>
+        <ul id="flare-list" style="list-style-type: none; padding: 0; margin-top: 10px;"></ul>
+      </div>
+    </div>
         <script>
           const storedResponses = JSON.parse(localStorage.getItem('responses')) || [];
 
@@ -146,6 +179,47 @@
               document.getElementById('result').innerHTML = 'Error occurred while fetching data.';
             }
             firstSend = false;
+          }
+          // Fetch Flare logic
+          const storedFlareResponses = JSON.parse(localStorage.getItem('flareResponses')) || [];
+
+          async function fetchFlare() {
+            const flareInput = document.getElementById('flare-input').value;
+            const flareList = document.getElementById('flare-list');
+            flareList.innerHTML = '<li>Loading...</li>'; // Show loading message
+
+            const requestData = {
+              description: flareInput,
+              previousResponses: btoa(unescape(encodeURIComponent(JSON.stringify(storedFlareResponses))))
+            };
+
+            try {
+              const response = await fetch('/flare', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData),
+              });
+
+              if (!response.ok) {
+                throw new Error('Failed to fetch flare data');
+              }
+
+              const data = await response.json();
+              const htmlResponse = data.responses;
+
+              // Display the pre-formatted HTML list in the response field
+              flareList.innerHTML = htmlResponse;
+
+              // Limit stored responses to the last 50
+              if (storedFlareResponses.length > 50) {
+                storedFlareResponses.splice(0, storedFlareResponses.length - 50);
+              }
+              localStorage.setItem('flareResponses', JSON.stringify(storedFlareResponses));
+            } catch (error) {
+              flareList.innerHTML = '<li>Error occurred while fetching flare data.</li>';
+            }
           }
         </script>
     </div>
